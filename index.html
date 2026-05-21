@@ -270,14 +270,11 @@ input[type=range]::-webkit-slider-thumb:hover{box-shadow:0 0 0 6px rgba(94,234,2
     <button class="step-btn" id="nav-4" onclick="goStep(4)">
       <span class="step-num">4</span><span>Impacto</span>
     </button>
-    <button class="step-btn" id="nav-5" onclick="goStep(5)">
-      <span class="step-num">5</span><span>Plan IA</span>
-    </button>
   </div>
 
   <!-- ─────────────── STEP 1: INPUT ─────────────── -->
   <div id="step-1" class="section">
-    <div class="step-label">Paso 01 / 05</div>
+    <div class="step-label">Paso 01 / 04</div>
     <div class="step-title">Métricas actuales de tu tienda</div>
     <div class="step-desc">Introduce los datos reales de tu negocio. Se compararán contra los benchmarks del análisis de 3,900 transacciones de clientes de moda.</div>
 
@@ -350,7 +347,7 @@ input[type=range]::-webkit-slider-thumb:hover{box-shadow:0 0 0 6px rgba(94,234,2
 
   <!-- ─────────────── STEP 2: DIAGNOSIS ─────────────── -->
   <div id="step-2" class="section" style="display:none">
-    <div class="step-label">Paso 02 / 05</div>
+    <div class="step-label">Paso 02 / 04</div>
     <div class="step-title">Diagnóstico vs benchmarks</div>
     <div class="step-desc">Tus métricas comparadas contra los datos reales de 3,900 transacciones. Los gaps identifican dónde existe mayor margen de mejora.</div>
 
@@ -379,7 +376,7 @@ input[type=range]::-webkit-slider-thumb:hover{box-shadow:0 0 0 6px rgba(94,234,2
 
   <!-- ─────────────── STEP 3: LEVERS ─────────────── -->
   <div id="step-3" class="section" style="display:none">
-    <div class="step-label">Paso 03 / 05</div>
+    <div class="step-label">Paso 03 / 04</div>
     <div class="step-title">Selecciona tus palancas de mejora</div>
     <div class="step-desc">Cada palanca está respaldada por hallazgos estadísticos del análisis. Activa las que quieres aplicar — cuantas más, mayor impacto combinado.</div>
 
@@ -395,7 +392,7 @@ input[type=range]::-webkit-slider-thumb:hover{box-shadow:0 0 0 6px rgba(94,234,2
 
   <!-- ─────────────── STEP 4: IMPACT ─────────────── -->
   <div id="step-4" class="section" style="display:none">
-    <div class="step-label">Paso 04 / 05</div>
+    <div class="step-label">Paso 04 / 04</div>
     <div class="step-title">Impacto proyectado</div>
     <div class="step-desc">Proyección calculada aplicando los coeficientes reales del dataset. No son estimaciones genéricas — cada número tiene trazabilidad directa al análisis estadístico.</div>
 
@@ -420,31 +417,6 @@ input[type=range]::-webkit-slider-thumb:hover{box-shadow:0 0 0 6px rgba(94,234,2
 
     <div style="display:flex;justify-content:flex-end;gap:12px">
       <button class="btn btn-secondary" onclick="goStep(3)">← Ajustar palancas</button>
-      <button class="btn btn-primary" onclick="runAI()">
-        Generar plan de acción IA →
-      </button>
-    </div>
-  </div>
-
-  <!-- ─────────────── STEP 5: AI PLAN ─────────────── -->
-  <div id="step-5" class="section" style="display:none">
-    <div class="step-label">Paso 05 / 05</div>
-    <div class="step-title">Plan de acción estratégico</div>
-    <div class="step-desc">Generado por IA a partir de tus datos específicos y los hallazgos estadísticos del análisis. Cada recomendación cita la evidencia que la respalda.</div>
-
-    <div class="ai-output">
-      <div class="ai-header">
-        <div class="ai-badge">
-          <div class="ai-dot" id="ai-dot"></div>
-          <span id="ai-status">Análisis en curso</span>
-        </div>
-        <div class="ai-title" id="ai-plan-title"></div>
-      </div>
-      <div id="ai-content">Preparando análisis personalizado...</div>
-    </div>
-
-    <div style="margin-top:20px;display:flex;justify-content:flex-end;gap:12px">
-      <button class="btn btn-secondary" onclick="goStep(4)">← Ver impacto</button>
       <button class="btn btn-secondary" onclick="resetAll()">↺ Nuevo análisis</button>
     </div>
   </div>
@@ -498,7 +470,7 @@ let currentStep = 1;
 //  NAVIGATION
 // ════════════════════════════════════════════════
 function goStep(n) {
-  for (let i = 1; i <= 5; i++) {
+  for (let i = 1; i <= 4; i++) {
     document.getElementById('step-'+i).style.display = i===n ? 'block' : 'none';
     const btn = document.getElementById('nav-'+i);
     btn.classList.toggle('active', i===n);
@@ -888,151 +860,6 @@ function runSimulation() {
   goStep(4);
 }
 
-// ════════════════════════════════════════════════
-//  STEP 5: AI PLAN
-// ════════════════════════════════════════════════
-async function runAI() {
-  goStep(5);
-  const u = userMetrics;
-  const r = simResult;
-  const activeLeverNames = LEVERS.filter(l => activeLeverIds.has(l.id)).map(l=>l.name);
-  const fmt = v => v >= 1000000 ? `$${(v/1e6).toFixed(2)}M` : v >= 1000 ? `$${(v/1000).toFixed(1)}K` : `$${v.toFixed(0)}`;
-
-  document.getElementById('ai-status').textContent = 'Analizando tu tienda...';
-  document.getElementById('ai-plan-title').textContent = '';
-  document.getElementById('ai-content').textContent = 'Preparando análisis personalizado...';
-
-  const prompt = `Eres un consultor de estrategia de retail especializado en análisis de datos de clientes. Hablas en español.
-
-Datos de la tienda del usuario:
-- Tasa de suscripción actual: ${u.sub}% (benchmark del dataset: ${B.subscriptionRate}%)
-- Ticket medio actual: $${u.ticket} (benchmark: $${B.avgTicket})
-- % clientes con descuento: ${u.disc}% (benchmark: ${B.discountRate}%)
-- Compras previas medias: ${u.prev} (benchmark: ${B.avgPrevPurchases})
-- Rating medio: ${u.rating}★ (benchmark: ${B.avgRating}★)
-- % revenue en Winter: ${u.winter}% (benchmark: ${B.winterShare}%)
-- % Outerwear: ${u.outer}% (benchmark: ${B.outerwearShare}%)
-- % Footwear: ${u.foot}% (benchmark: ${B.footwearShare}%)
-- Clientes activos: ${u.clients.toLocaleString()}
-- Frecuencia compras/año: ${u.freq}
-- Revenue actual estimado: ${fmt(r.baseRevenue)}
-
-Palancas seleccionadas por el usuario: ${activeLeverNames.join(', ')}
-
-Impacto proyectado:
-- Nuevo ticket medio: $${r.newTicket?.toFixed(2)} (+$${r.totalTicketBoost?.toFixed(2)})
-- Revenue proyectado: ${fmt(r.newRevenue)} (+${fmt(r.totalRevenueBoost)})
-- ROI potencial: ${r.baseRevenue > 0 ? (r.totalRevenueBoost/r.baseRevenue*100).toFixed(1) : '—'}%
-
-Hallazgos estadísticos del dataset de referencia (3,900 transacciones reales de moda):
-- Cramér's V(Suscripción × Descuento) = 0.46 → asociación fuerte: suscritos reciben más descuentos
-- Cramér's V(Suscripción × Frecuencia) = 0.30 → suscritos compran con más frecuencia  
-- ANOVA Gasto × Temporada: F=48.04, p<0.001 → Winter ($73.83) vs Summer ($60.28), diferencia de $13.55
-- ANOVA Gasto × Género: F=38.15, p<0.001 → Male ($68) vs Female ($62.32)
-- K-Means K=2: Cluster Fiel (92.8% suscripción, $71.46 ticket, 26.4 compras previas) vs Cluster Ocasional (6.1% suscripción, $61.83 ticket, 12.1 compras previas)
-- Categorías por ticket: Outerwear $86.07 > Footwear $71.21 > Clothing $62.01 > Accessories $51.28
-- Silhouette Score = 0.245 → dos perfiles bien diferenciados
-
-Genera un plan de acción estratégico detallado con esta estructura exacta:
-
-**DIAGNÓSTICO EJECUTIVO**
-[2-3 frases identificando los gaps más críticos de esta tienda específica y su impacto]
-
-**PRIORIDAD 1 — [NOMBRE ACCIÓN]**
-Qué hacer: [acción concreta]
-Por qué funciona: [cita el hallazgo estadístico específico]
-Cómo medirlo: [KPI concreto]
-Horizonte: [corto/medio/largo plazo]
-
-**PRIORIDAD 2 — [NOMBRE ACCIÓN]**
-[mismo formato]
-
-**PRIORIDAD 3 — [NOMBRE ACCIÓN]**
-[mismo formato]
-
-**RIESGOS Y CONSIDERACIONES**
-[2-3 bullets con riesgos reales a tener en cuenta]
-
-**CONCLUSIÓN**
-[1-2 frases sobre el potencial total y el primer paso a dar]
-
-Sé directo, usa los números exactos del análisis, no inventes coeficientes que no están en los datos proporcionados. Máximo 500 palabras.`;
-
-  try {
-    document.getElementById('ai-content').textContent = '';
-    const response = await fetch('https://retail-strategy-proxy.vercel.app/api/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-5',
-        max_tokens: 1000,
-        stream: true,
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
-
-    document.getElementById('ai-status').textContent = 'Generando plan...';
-    document.getElementById('ai-dot').style.animationDuration = '.5s';
-
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let fullText = '';
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      const chunk = decoder.decode(value);
-      const lines = chunk.split('\n');
-      for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          const data = line.slice(6);
-          if (data === '[DONE]') continue;
-          try {
-            const parsed = JSON.parse(data);
-            if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
-              fullText += parsed.delta.text;
-              renderAIContent(fullText);
-            }
-          } catch {}
-        }
-      }
-    }
-
-    document.getElementById('ai-status').textContent = 'Plan completado';
-    document.getElementById('ai-dot').style.animation = 'none';
-    document.getElementById('ai-dot').style.background = 'var(--good)';
-    document.getElementById('ai-plan-title').textContent = `Análisis personalizado para ${u.clients.toLocaleString()} clientes`;
-    markDone(5);
-
-  } catch(e) {
-    document.getElementById('ai-content').textContent = 'Error al conectar con la API. Comprueba tu conexión a internet e inténtalo de nuevo.';
-    document.getElementById('ai-status').textContent = 'Error';
-  }
-}
-
-function renderAIContent(text) {
-  const el = document.getElementById('ai-content');
-  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  const inlineBold = s => s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-
-  let html = '';
-  for (const raw of text.split('\n')) {
-    const line = raw.trim();
-    if (line === '') { html += '<div style="height:10px"></div>'; continue; }
-    const heading = line.match(/^\*\*(.+?)\*\*$/);
-    if (heading) {
-      html += `<div class="section-h">${inlineBold(esc(heading[1]))}</div>`;
-      continue;
-    }
-    if (/^[-·*]\s+/.test(line)) {
-      const content = line.replace(/^[-·*]\s+/, '');
-      html += `<div style="display:flex;gap:10px;margin:4px 0;line-height:1.55"><span style="color:var(--accent);flex-shrink:0">·</span><span>${inlineBold(esc(content))}</span></div>`;
-      continue;
-    }
-    html += `<p style="margin:6px 0;line-height:1.55">${inlineBold(esc(line))}</p>`;
-  }
-  el.innerHTML = html;
-}
 
 // ════════════════════════════════════════════════
 //  UTILS
@@ -1047,7 +874,7 @@ function resetAll() {
   activeLeverIds.clear();
   userMetrics = {};
   simResult = {};
-  for (let i = 1; i <= 5; i++) {
+  for (let i = 1; i <= 4; i++) {
     const btn = document.getElementById('nav-'+i);
     btn.classList.remove('done','active');
     btn.querySelector('.step-num').innerHTML = i;
