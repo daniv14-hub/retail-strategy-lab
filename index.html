@@ -1012,10 +1012,25 @@ Sé directo, usa los números exactos del análisis, no inventes coeficientes qu
 
 function renderAIContent(text) {
   const el = document.getElementById('ai-content');
-  // Format **bold** sections
-  let html = text
-    .replace(/\*\*(.*?)\*\*/g, '<span class="section-h">$1</span>')
-    .replace(/\n/g, '<br>');
+  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const inlineBold = s => s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+
+  let html = '';
+  for (const raw of text.split('\n')) {
+    const line = raw.trim();
+    if (line === '') { html += '<div style="height:10px"></div>'; continue; }
+    const heading = line.match(/^\*\*(.+?)\*\*$/);
+    if (heading) {
+      html += `<div class="section-h">${inlineBold(esc(heading[1]))}</div>`;
+      continue;
+    }
+    if (/^[-·*]\s+/.test(line)) {
+      const content = line.replace(/^[-·*]\s+/, '');
+      html += `<div style="display:flex;gap:10px;margin:4px 0;line-height:1.55"><span style="color:var(--accent);flex-shrink:0">·</span><span>${inlineBold(esc(content))}</span></div>`;
+      continue;
+    }
+    html += `<p style="margin:6px 0;line-height:1.55">${inlineBold(esc(line))}</p>`;
+  }
   el.innerHTML = html;
 }
 
